@@ -1,9 +1,11 @@
+import settings
 from settings import *
 from random import choice
 from sys import exit
 from os.path import join
 
 from timer import Timer
+import save_data
 
 class Game:
 
@@ -36,22 +38,26 @@ class Game:
             self.sprites, 
             self.create_new_tetromino,
             self.field_data)
+        
+        #score
+        self.current_level = settings.START_LEVEL
+        self.current_score = 0
+        self.current_lines = 0
 
-        # timer
-        self.down_speed = UPDATE_START_SPEED
+        # Тайминги с учётом уровня
+        self.down_speed = UPDATE_START_SPEED * (settings.SPEEDUP_COEFF ** (self.current_level - 1))
+        self.move_wait_time = MOVE_WAIT_TIME
+        self.rotate_wait_time = ROTATE_WAIT_TIME * (settings.SPEEDUP_COEFF ** (self.current_level - 1))
         self.down_speed_faster = self.down_speed * 0.3
         self.down_pressed = False
         self.timers = {
-            "vertical move": Timer(UPDATE_START_SPEED, True, self.move_down),
-            "horizontal move": Timer(MOVE_WAIT_TIME),
-            "rotate": Timer(ROTATE_WAIT_TIME)
+            "vertical move": Timer(self.down_speed, True, self.move_down),
+            "horizontal move": Timer(self.move_wait_time),
+            "rotate": Timer(self.rotate_wait_time)
         }
         self.timers["vertical move"].activate()
 
-        #score
-        self.current_level = 1
-        self.current_score = 0
-        self.current_lines = 0
+        
 
         # sound
         self.landing_sound = pygame.mixer.Sound(join("sound", "landing.wav"))
@@ -64,15 +70,25 @@ class Game:
         # every 10 lines increase level
         if self.current_lines / 10 > self.current_level:
             self.current_level += 1
-            self.down_speed *= 0.75
+            # Пересчитываем все тайминги!
+            self.down_speed *= settings.SPEEDUP_COEFF
             self.down_speed_faster = self.down_speed * 0.3
+            self.move_wait_time *= settings.SPEEDUP_COEFF
+            #self.rotate_wait_time *= settings.SPEEDUP_COEFF
             self.timers["vertical move"].duration = self.down_speed
+            self.timers["horizontal move"].duration = self.move_wait_time
+            self.timers["rotate"].duration = self.rotate_wait_time
 
         self.update_score(self.current_lines, self.current_score, self.current_level)
         
     def check_game_over(self):
         for block in self.tetromino.blocks:
             if block.pos.y < 0:
+                data = save_data.load_data()
+                data["LAST_SCORE"] = self.current_score
+                if self.current_score > data.get("HIGH_SCORE", 0):
+                    data["HIGH_SCORE"] = self.current_score
+                save_data.save_data(data)
                 exit()
 
     def create_new_tetromino(self):
@@ -184,11 +200,7 @@ class Game:
         pygame.draw.rect(self.display_surface, LINE_COLOR, self.rect, 2, 2)
         
         # update the display
-        #pygame.display.update()
-
-    
-
-                
+        #pygame.display.update()            
 
 
 class Tetromino:
@@ -306,4 +318,3 @@ class Block(pygame.sprite.Sprite):
         # self.pos -> self.rect
         #self.rect = self.image.get_rect(topleft = self.pos * CELL_SIZE)
         self.rect.topleft = self.pos * CELL_SIZE
- 

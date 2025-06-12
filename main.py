@@ -1,17 +1,23 @@
 from settings import *
+import settings
 from sys import exit
 from os.path import join
+import save_data
 
 # components
 from game import Game
 from score import Score
 from preview import Preview
+from menu import Menu, SettingsMenu
 
 from random import choice
 
+data = save_data.load_data()
+for key, value in data.items():
+    setattr(settings, key, value)
+
 class Main():
     def __init__(self):
-        
         pygame.init()
         self.display_surface = pygame.display.set_mode((WINDOW_WIDHT, WINDOW_HEIGHT))
         self.clock = pygame.time.Clock()
@@ -19,11 +25,15 @@ class Main():
 
         # shapes
         self.next_shapes = [choice(list(TETROMINOS.keys())) for shape in range(3)]
-        
 
         # components
         self.game = Game(self.get_next_shape, self.update_score)
-        self.score = Score()
+        # Передаём стартовые значения в Score
+        self.score = Score(
+            score=self.game.current_score,
+            level=self.game.current_level,
+            lines=self.game.current_lines
+        )
         self.preview = Preview()
 
         # audio
@@ -62,6 +72,20 @@ class Main():
             pygame.display.update()
             self.clock.tick()
 
-if __name__ == "__main__":
+def start_game():
     main = Main()
     main.Update()
+
+def open_settings():
+    settings_menu = SettingsMenu(menu.Update)
+    settings_menu.Update()
+
+def show_authors():
+    # Здесь можно реализовать окно с авторами
+    print("Авторы: Ваше Имя")
+
+if __name__ == "__main__":
+    pygame.init()
+    pygame.display.set_mode((WINDOW_WIDHT, WINDOW_HEIGHT))
+    menu = Menu(start_game, open_settings, show_authors)
+    menu.Update()
