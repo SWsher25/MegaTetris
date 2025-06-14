@@ -52,11 +52,16 @@ class Main():
         return next_shape
 
     def Update(self):
-        while True:
+        running = True
+        while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    running = False  # выйти из игрового цикла
+
+            if self.game.game_over: running = False
 
             # Display
             self.display_surface.fill(GRAY)
@@ -65,12 +70,9 @@ class Main():
             self.game.Update()
             self.score.Update()
             self.preview.Update(self.next_shapes)
-            
-            
-            
-            
             pygame.display.update()
             self.clock.tick()
+
 
 def start_game():
     main = Main()
@@ -80,12 +82,13 @@ def open_settings():
     settings_menu = SettingsMenu(menu.Update)
     settings_menu.Update()
 
-def show_authors():
-    # Здесь можно реализовать окно с авторами
-    print("Авторы: Ваше Имя")
+def exit_game():
+    pygame.quit()
+    exit()
 
 if __name__ == "__main__":
     pygame.init()
     pygame.display.set_mode((WINDOW_WIDHT, WINDOW_HEIGHT))
-    menu = Menu(start_game, open_settings, show_authors)
-    menu.Update()
+    menu = Menu(start_game, open_settings, exit_game)
+    while True:
+        menu.Update()

@@ -63,6 +63,9 @@ class Game:
         self.landing_sound = pygame.mixer.Sound(join("sound", "landing.wav"))
         self.landing_sound.set_volume(0.05)
 
+        # game over flag
+        self.game_over = False
+
     def calculate_score(self, num_lines):
         self.current_lines += num_lines
         self.current_score += SCORE_DATA[num_lines] * self.current_level
@@ -89,7 +92,8 @@ class Game:
                 if self.current_score > data.get("HIGH_SCORE", 0):
                     data["HIGH_SCORE"] = self.current_score
                 save_data.save_data(data)
-                exit()
+                #exit()
+                self.game_over = True
 
     def create_new_tetromino(self):
         
