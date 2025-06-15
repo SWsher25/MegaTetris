@@ -1,4 +1,5 @@
 from settings import *
+
 from pygame.image import load
 from os import path
 
@@ -11,7 +12,7 @@ class Preview:
         # shapes
         #self.next_shapes = next_shapes
         #self.shape_surfaces = {shape: load("../graphics/T.png") for shape in TETROMINOS.keys()}
-        self.shape_surfaces = {shape: load(path.join('graphics', f'{shape}.png')).convert_alpha() for shape in TETROMINOS.keys()}
+        self.shape_surfaces = {shape: load(path.join(PREVIEW_SPRITES[shape])).convert_alpha() for shape in TETROMINOS.keys()}
 
         # image position data
         self.increment_height = self.surface.get_height() / 3

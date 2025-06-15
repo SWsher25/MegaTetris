@@ -3,6 +3,7 @@ import settings
 from sys import exit
 from os.path import join
 import save_data
+import os
 
 # components
 from game import Game
@@ -37,9 +38,15 @@ class Main():
         self.preview = Preview()
 
         # audio
-        self.music = pygame.mixer.Sound(join("sound", "tetris.mp3"))
-        self.music.set_volume(0.5)
+        self.music = pygame.mixer.Sound(settings.MUSIC_PATH)
+        self.music.set_volume(save_data.load_data().get("MUSIC_VOLUME", settings.DEFAULT_MUSIC_VOLUME))
         self.music.play(-1)
+
+        # font
+        self.font = pygame.font.SysFont(settings.FONT_MAIN, settings.FONT_MAIN_SIZE)
+        self.title_font = pygame.font.SysFont(settings.FONT_MAIN, settings.FONT_TITLE_SIZE, bold=True)
+        bg_path = os.path.join(os.path.dirname(__file__), settings.MENU_BG_PATH)
+        button_sprite_path = settings.BUTTON_SPRITE_PATH
 
     def update_score(self, lines, score, level):
         self.score.lines = lines
@@ -73,10 +80,15 @@ class Main():
             pygame.display.update()
             self.clock.tick()
 
+    def stop_music(self):
+        if hasattr(self, "music"):
+            self.music.stop()
+
 
 def start_game():
     main = Main()
     main.Update()
+    main.stop_music()  # Остановить музыку после выхода из игрового цикла
 
 def open_settings():
     settings_menu = SettingsMenu(menu.Update)

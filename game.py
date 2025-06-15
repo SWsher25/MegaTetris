@@ -60,8 +60,8 @@ class Game:
         
 
         # sound
-        self.landing_sound = pygame.mixer.Sound(join("sound", "landing.wav"))
-        self.landing_sound.set_volume(0.05)
+        self.landing_sound = pygame.mixer.Sound(settings.LANDING_SOUND_PATH)
+        self.landing_sound.set_volume(save_data.load_data().get("EFFECTS_VOLUME", settings.DEFAULT_EFFECTS_VOLUME))
 
         # game over flag
         self.game_over = False
@@ -250,7 +250,7 @@ class Tetromino:
 
             # landing sound
             self.music = pygame.mixer.Sound(join("sound", "landing.wav"))
-            self.music.set_volume(0.05)
+            self.music.set_volume(save_data.load_data().get("EFFECTS_VOLUME", settings.DEFAULT_MUSIC_VOLUME))
             self.music.play()
 
     # rotate
