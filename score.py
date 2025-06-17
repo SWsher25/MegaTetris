@@ -4,24 +4,35 @@ import save_data
 import pygame
 
 class Score:
+    """
+    Класс панели счёта, уровня, линий, последнего и рекорда.
+    """
     def __init__(self, score=0, level=1, lines=0):
         self.display_surface = pygame.display.get_surface()
+        # Создаём отдельную поверхность для панели счёта
         self.surface = pygame.Surface((SIDEBAR_WIDTH, GAME_HEIGHT * SCORE_HEIGHT_FRACTION - PADDING))
         self.rect = self.surface.get_rect(bottomright = (WINDOW_WIDHT - PADDING, WINDOW_HEIGHT - PADDING))
-        self.font = pygame.font.SysFont("arial", 28)
+        self.font = pygame.font.SysFont("PixeloidSans", 18)
         self.increment_height = self.surface.get_height() // 5  # теперь 5 строк
 
         # data
+        # Текущие значения
         self.score = score
         self.level = level
         self.lines = lines
 
     def display_text(self, pos, text, color="white"):
+        """
+        Рисует одну строку текста (название и значение) на панели.
+        """
         text_surface = self.font.render(f"{text[0]}: {text[1]}", True, color)
         text_rect = text_surface.get_rect(center=pos)
         self.surface.blit(text_surface, text_rect)
 
     def Update(self):
+        """
+        Обновляет панель: очищает, выводит все значения, рисует рамку.
+        """
         self.surface.fill(GRAY)
         data = save_data.load_data()
         last_score = data.get("LAST_SCORE", 0)

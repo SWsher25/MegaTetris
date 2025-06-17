@@ -4,6 +4,9 @@ import settings
 import save_data
 
 class Button:
+    """
+    Класс кнопки для меню. Отвечает за отрисовку, обработку нажатий, загрузку спрайта.
+    """
     def __init__(self, text, pos, size, callback, sprite_path=None, sprite_size=None):
         self.rect = pygame.Rect(pos, size)
         self.text = text
@@ -13,8 +16,9 @@ class Button:
         self.color_hover = (120, 120, 255)
         self.color = self.color_idle
         #self.sprite = None
+
+        # Загружаем спрайт кнопки, если указан путь
         if sprite_path:
-            import os
             try:
                 sprite_full_path = os.path.join(os.path.dirname(__file__), "graphics", sprite_path)
                 image = pygame.image.load(sprite_full_path).convert_alpha()
@@ -27,17 +31,20 @@ class Button:
                 self.sprite = None  # если файл не найден, просто не используем спрайт
 
     def draw(self, surface):
+        """
+        Рисует кнопку: спрайт и текст.
+        """
         if self.sprite:
             # Растягиваем спрайт на всю кнопку
             scaled_sprite = pygame.transform.smoothscale(self.sprite, (self.rect.width, self.rect.height))
             surface.blit(scaled_sprite, self.rect)
         # Цвета
-        outline_color = "#f07e13"  # чёрная обводка
+        outline_color = "#f07e13"  # цвет для обводки (если понадобится)
         text_color = "white" # основной цвет текста
         # Текст
         text_surf = self.font.render(self.text, True, text_color)
         text_rect = text_surf.get_rect(center=self.rect.center)
-        # Обводка: рисуем текст вокруг центра сдвигами
+        # Можно включить обводку, раскомментировав строки ниже
         # for dx in [-2, 0, 2]:
         #     for dy in [-2, 0, 2]:
         #         if dx != 0 or dy != 0:
@@ -48,6 +55,9 @@ class Button:
         surface.blit(text_surf, text_rect)
 
     def handle_event(self, event):
+        """
+        Обрабатывает наведение и нажатие на кнопку.
+        """
         if event.type == pygame.MOUSEMOTION:
             self.color = self.color_hover if self.rect.collidepoint(event.pos) else self.color_idle
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -55,9 +65,12 @@ class Button:
                 self.callback()
 
 class Menu:
+    """
+    Главное меню игры: область, кнопки, заголовок, фон.
+    """
     def __init__(self, start_game, open_settings, exit_game):
         self.display_surface = pygame.display.get_surface()
-        # Область меню
+        # Область меню (для позиционирования элементов)
         self.menu_area = pygame.Rect(
             settings.MENU_AREA_X,
             settings.MENU_AREA_Y,
@@ -86,6 +99,9 @@ class Menu:
             self.bg_sprite = None
 
     def Update(self):
+        """
+        Основной цикл главного меню: обработка событий, отрисовка фона, заголовка, кнопок.
+        """
         running = True
         clock = pygame.time.Clock()
         while running:
@@ -100,7 +116,6 @@ class Menu:
                 self.display_surface.blit(self.bg_sprite, (0, 0))
             else:
                 self.display_surface.fill(self.bg_color)
-            # --- Больше не рисуем area_surface! ---
             # Заголовок
             title_surf = self.title_font.render("MegaTetris", True, (255, 255, 255))
             title_x = self.menu_area.x + self.menu_area.width // 2 - title_surf.get_width() // 2
@@ -113,6 +128,9 @@ class Menu:
             clock.tick(60)
 
 class SettingsMenu:
+    """
+    Меню настроек: область, поля, ползунки громкости, подсказка, фон.
+    """
     def __init__(self, on_back):
         self.display_surface = pygame.display.get_surface()
         self.font = pygame.font.SysFont(settings.FONT_MAIN, settings.FONT_MAIN_SIZE)
@@ -149,6 +167,13 @@ class SettingsMenu:
             self.bg_sprite = None
 
     def draw_slider(self, x, y, value, label, selected=False):
+        """
+        Рисует ползунок громкости.
+        x, y — координаты полосы
+        value — значение (0.0 ... 1.0)
+        label — подпись
+        selected — подсвечивать ли ползунок
+        """
         bar_width = 200
         bar_height = 8
         slider_radius = 12
@@ -160,6 +185,9 @@ class SettingsMenu:
         return pygame.Rect(slider_x-slider_radius, y + bar_height//2-slider_radius, slider_radius*2, slider_radius*2), pygame.Rect(x, y, bar_width, bar_height)
 
     def Update(self):
+        """
+        Основной цикл меню настроек: обработка событий, отрисовка фона, полей, ползунков, подсказки.
+        """
         running = True
         clock = pygame.time.Clock()
         dragging = None
@@ -219,6 +247,8 @@ class SettingsMenu:
                         elif self.selected == len(self.fields) + 1:
                             self.effects_volume = min(1.0, self.effects_volume + 0.05)
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    
+                    # Начинаем drag-and-drop, если клик по кружку или полосе
                     if music_slider_circle.collidepoint(mouse_pos) or music_slider_bar.collidepoint(mouse_pos):
                         dragging = "music"
                     elif effects_slider_circle.collidepoint(mouse_pos) or effects_slider_bar.collidepoint(mouse_pos):
@@ -246,7 +276,7 @@ class SettingsMenu:
             title_y = self.menu_area.y + settings.SETTINGS_TITLE_Y
             self.display_surface.blit(title, (title_x, title_y))
 
-            # Поля
+            # Поля (например, стартовый уровень)
             for i, field in enumerate(self.fields):
                 color = (255, 255, 0) if i == self.selected else (200, 200, 200)
                 text = f"{field.get('label', field['name'])}: {field['value']}"
@@ -273,6 +303,9 @@ class SettingsMenu:
             clock.tick(60)
 
     def save_settings(self):
+        """
+        Сохраняет все настройки в файл.
+        """
         data = save_data.load_data()
         for field in self.fields:
             data[field["name"]] = field["value"]

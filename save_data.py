@@ -10,6 +10,10 @@ DEFAULT_DATA = {
 }
 
 def load_data():
+    """
+    Загружает данные из файла user_settings.json.
+    Если файл не найден или повреждён — возвращает значения по умолчанию.
+    """
     if not os.path.exists(SAVE_FILE):
         return DEFAULT_DATA.copy()
     try:
@@ -24,5 +28,8 @@ def load_data():
         return DEFAULT_DATA.copy()
 
 def save_data(data):
+    """
+    Сохраняет данные в файл user_settings.json.
+    """
     with open(SAVE_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
